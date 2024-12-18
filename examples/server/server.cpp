@@ -830,6 +830,8 @@ int main(int argc, char ** argv) {
                 res.set_content(error_resp, "application/json");
                 return;
             }
+            fprintf(stderr, "TEST\n");
+            whisper_print_timings(ctx);
         }
 
         // return results to user
