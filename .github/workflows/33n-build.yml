@@ -12,7 +12,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
 
-    name: Build data_checker_33n and run pytest
+    name: Build
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -23,7 +23,7 @@ jobs:
     outputs:
       output: ${{ steps.tagging.outputs.new_tag }}
 
-    name: Release and tag version of data_checker_33n
+    name: Release and tag version CPP
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -60,12 +60,3 @@ jobs:
           region: eu-west-2
           tags: gha-${{needs.release_tag_cpp.outputs.output}}
           dockerfile: .devops/33n-build.Dockerfile
-      
-#      - name: Microsoft Teams Notification
-#        uses: skitionek/notify-microsoft-teams@master
-#        if: always()
-#        with:
-#          webhook_url: ${{ secrets.MS_GITHUB_TEAM_WEBHOOK_URI }}
-#          needs: ${{ toJson(needs) }}
-#          job: ${{ toJson(job) }}
-#          steps: ${{ toJson(steps) }}
