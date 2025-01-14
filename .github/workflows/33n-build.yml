@@ -1,0 +1,71 @@
+name: Release Whisper.CPP
+
+on:
+  push:
+    branches:
+      - 'inih-dev'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    name: Build data_checker_33n and run pytest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+  release_tag_cpp:
+    needs: [build]
+    runs-on: ubuntu-latest
+    outputs:
+      output: ${{ steps.tagging.outputs.new_tag }}
+
+    name: Release and tag version of data_checker_33n
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
+
+      - name: Bump version and push tag
+        id: tagging
+        uses: anothrNick/github-tag-action@1.71.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_ORG_REPO_TAG }}
+          INITIAL_VERSION: "0.0.0"
+          WITH_V: "true"
+          DRY_RUN: "true"
+
+  build_and_push_image:
+    needs: [release_tag_cpp]
+    runs-on: ubuntu-latest
+
+    name: Build & push image to ECR
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build and Push
+        uses: kciter/aws-ecr-action@v5
+        env:
+          repo: tests
+          build_github_token: ${{ secrets.GIT_TOKEN_CODE_DEPLOY }}
+        with:
+          access_key_id: ${{ secrets.AWS_PROD_ECR_AKI }}
+          secret_access_key: ${{ secrets.AWS_PROD_ECR_SAK }}
+          account_id: ${{ secrets.AWS_PROD_ACCOUNT_ID }}
+          repo: ${{ env.repo }}
+          region: eu-west-2
+          tags: gha-${{needs.release_tag_cpp.outputs.output}}
+          dockerfile: .devops/33n-build.Dockerfile
+      
+#      - name: Microsoft Teams Notification
+#        uses: skitionek/notify-microsoft-teams@master
+#        if: always()
+#        with:
+#          webhook_url: ${{ secrets.MS_GITHUB_TEAM_WEBHOOK_URI }}
+#          needs: ${{ toJson(needs) }}
+#          job: ${{ toJson(job) }}
+#          steps: ${{ toJson(steps) }}
