@@ -3,7 +3,7 @@ name: Release Whisper.CPP
 on:
   push:
     branches:
-      - 'inih-dev'
+      - '33n-build'
 
 jobs:
   build:
@@ -37,7 +37,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GIT_ORG_REPO_TAG }}
           INITIAL_VERSION: "0.0.0"
           WITH_V: "true"
-          DRY_RUN: "true"
 
   build_and_push_image:
     needs: [release_tag_cpp]
@@ -58,5 +57,5 @@ jobs:
           account_id: ${{ secrets.AWS_PROD_ACCOUNT_ID }}
           repo: ${{ env.repo }}
           region: eu-west-2
-          tags: gha-${{needs.release_tag_cpp.outputs.output}}
+          tags: build-${{needs.release_tag_cpp.outputs.output}}
           dockerfile: .devops/33n-build.Dockerfile
