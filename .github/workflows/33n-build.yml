@@ -23,7 +23,7 @@ jobs:
     outputs:
       output: ${{ steps.tagging.outputs.new_tag }}
 
-    name: Release and tag version CPP
+    name: Tag version CPP
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -37,6 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GIT_ORG_REPO_TAG }}
           INITIAL_VERSION: "0.0.0"
           WITH_V: "true"
+          RELEASE_BRANCHES: "33n-build"
 
   build_and_push_image:
     needs: [release_tag_cpp]
