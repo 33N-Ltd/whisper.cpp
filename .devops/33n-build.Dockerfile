@@ -29,19 +29,3 @@ COPY .. .
 RUN make medium.en
 
 ENTRYPOINT [ "bash", "-c" ]
-
-#  && make \
-
-#FROM ${BASE_CUDA_RUN_CONTAINER} AS runtime
-#ENV CUDA_MAIN_VERSION=12.4
-#ENV LD_LIBRARY_PATH /usr/local/cuda-${CUDA_MAIN_VERSION}/compat:$LD_LIBRARY_PATH
-#WORKDIR /app
-
-#RUN apt-get update && \
-#  apt install -y --allow-change-held-packages curl ffmpeg cuda-libraries-12-4 libcublas-12-4 libnccl2 \
-#  && apt full-upgrade -y \
-#  && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
-
-#COPY --from=build /app /app
-
-#ENTRYPOINT [ "./startserver.sh" ]
