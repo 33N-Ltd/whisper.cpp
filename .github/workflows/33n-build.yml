@@ -30,15 +30,6 @@ jobs:
         with:
           fetch-depth: '0'
 
-      - name: Bump version and push tag
-        id: tagging
-        uses: anothrNick/github-tag-action@1.71.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GIT_ORG_REPO_TAG }}
-          INITIAL_VERSION: "0.0.0"
-          WITH_V: "true"
-          RELEASE_BRANCHES: "33n-build"
-
   build_and_push_image:
     needs: [release_tag_cpp]
     runs-on: ubuntu-latest
@@ -47,6 +38,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Set Short SHA as Environment Variable
+        run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
       - name: Build and Push
         uses: kciter/aws-ecr-action@v5
         env:
@@ -58,5 +51,5 @@ jobs:
           account_id: ${{ secrets.AWS_PROD_ACCOUNT_ID }}
           repo: ${{ env.repo }}
           region: eu-west-2
-          tags: build-latest,build-${{needs.release_tag_cpp.outputs.output}}
+          tags: build-latest,build-$SHORT_SHA
           dockerfile: .devops/33n-build.Dockerfile
