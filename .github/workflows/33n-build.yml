@@ -57,5 +57,5 @@ jobs:
           account_id: ${{ secrets.AWS_PROD_ACCOUNT_ID }}
           repo: ${{ env.repo }}
           region: eu-west-2
-          tags: build-${{needs.release_tag_cpp.outputs.output}}
+          tags: latest,build-${{needs.release_tag_cpp.outputs.output}}
           dockerfile: .devops/33n-build.Dockerfile
