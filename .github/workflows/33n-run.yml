@@ -7,12 +7,6 @@ on:
     paths:
       - '.devops/33n-run.Dockerfile'
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
   build_and_push_image:
     runs-on: ubuntu-latest
 
