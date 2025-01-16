@@ -5,8 +5,7 @@ on:
     branches:
       - '33n-build'
     paths:
-      - '.devops/33n-build.Dockerfile'
-
+      - '.devops/33n-run.Dockerfile'
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -14,34 +13,14 @@ jobs:
       matrix:
         os: [ubuntu-latest]
 
-    name: Build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-  release_tag_cpp:
-    needs: [build]
-    runs-on: ubuntu-latest
-    outputs:
-      output: ${{ steps.tagging.outputs.new_tag }}
-
-    name: Tag version CPP
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: '0'
-
   build_and_push_image:
-    needs: [release_tag_cpp]
+    needs: [build]
     runs-on: ubuntu-latest
 
     name: Build & push image to ECR
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Set Short SHA as Environment Variable
-        run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
       - name: Build and Push
         uses: kciter/aws-ecr-action@v5
         env:
@@ -53,5 +32,6 @@ jobs:
           account_id: ${{ secrets.AWS_PROD_ACCOUNT_ID }}
           repo: ${{ env.repo }}
           region: eu-west-2
-          tags: build-latest,build-${{ env.SHORT_SHA }}
-          dockerfile: .devops/33n-build.Dockerfile
+          tags: run-latest,run-${{needs.release_tag_cpp.outputs.output}}
+          dockerfile: .devops/33n-run.Dockerfile
+          extra_build_args: --build-arg BASE_CUDA_DEV_CONTAINER=${{ env.repo }}:build-latest
