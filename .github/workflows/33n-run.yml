@@ -14,7 +14,6 @@ jobs:
         os: [ubuntu-latest]
 
   build_and_push_image:
-    needs: [build]
     runs-on: ubuntu-latest
 
     name: Build & push image to ECR
