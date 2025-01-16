@@ -51,5 +51,5 @@ jobs:
           account_id: ${{ secrets.AWS_PROD_ACCOUNT_ID }}
           repo: ${{ env.repo }}
           region: eu-west-2
-          tags: build-latest,build-$SHORT_SHA
+          tags: build-latest,build-${{ env.SHORT_SHA }}
           dockerfile: .devops/33n-build.Dockerfile
