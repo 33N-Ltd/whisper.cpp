@@ -244,10 +244,13 @@ std::string generate_temp_filename(const std::string &prefix, const std::string 
 bool convert_to_wav(const std::string & temp_filename, std::string & error_resp) {
     std::ostringstream cmd_stream;
     std::string converted_filename_temp = temp_filename + "_temp.wav";
-    cmd_stream << "ffmpeg -i \"" << temp_filename << "\" -y -ar 16000 -ac 1 -c:a pcm_s16le \"" << converted_filename_temp << "\" 2>&1";
+//    cmd_stream << "ffmpeg -i \"" << temp_filename << "\" -y -ar 16000 -ac 1 -c:a pcm_s16le \"" << converted_filename_temp << "\" 2>&1";
+    cmd_stream << "./vad.py " << temp_filename << " " << converted_filename_temp;
     std::string cmd = cmd_stream.str();
 
+clock_t beginv = clock();
     int status = std::system(cmd.c_str());
+clock_t endv = clock();
     if (status != 0) {
         error_resp = "{\"error\":\"FFmpeg conversion failed.\"}";
         return false;
@@ -264,6 +267,8 @@ bool convert_to_wav(const std::string & temp_filename, std::string & error_resp)
         error_resp = "{\"error\":\"Failed to rename the temporary file.\"}";
         return false;
     }
+double elapsed_secsv = double(endv-beginv) / CLOCKS_PER_SEC;
+fprintf(stderr, "Conversion time: %.2lf seconds.\n", elapsed_secsv);
     return true;
 }
 
@@ -857,15 +862,16 @@ int main(int argc, char ** argv) {
                 };
                 wparams.abort_callback_user_data = &is_aborted;
             }
-
+clock_t begin = clock();
             if (whisper_full_parallel(ctx, wparams, pcmf32.data(), pcmf32.size(), params.n_processors) != 0) {
                 fprintf(stderr, "%s: failed to process audio\n", argv[0]);
                 const std::string error_resp = "{\"error\":\"failed to process audio\"}";
                 res.set_content(error_resp, "application/json");
                 return;
             }
-            fprintf(stderr, "TEST\n");
-            whisper_print_timings(ctx);
+clock_t end = clock();
+double elapsed_secs = double(end-begin) / CLOCKS_PER_SEC;
+fprintf(stderr, "Transcription time: %.2lf seconds for %s.\n", elapsed_secs, filename.c_str());
         }
 
         // return results to user
