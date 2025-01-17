@@ -1,9 +1,9 @@
 name: Release Whisper.CPP
 
-on:
-  push:
-    branches:
-      - '33n-build-stage'
+#on:
+#  push:
+#    branches:
+#      - '33n-build-stage'
 #    paths:
 #      - '.devops/33n-run.Dockerfile'
 jobs:

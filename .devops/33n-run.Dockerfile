@@ -20,6 +20,7 @@ RUN apt-get update && \
 
 COPY --from=build /app /app
 
+COPY vad.py .
 RUN chmod u+x ./vad.py
 
 ENTRYPOINT [ "bash", "-c" ]
