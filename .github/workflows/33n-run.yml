@@ -27,6 +27,6 @@ jobs:
           account_id: ${{ secrets.AWS_PROD_ACCOUNT_ID }}
           repo: ${{ env.repo }}
           region: eu-west-2
-          tags: run-${{ env.SHORT_SHA }}-stage
+          tags: run-${{ env.SHORT_SHA }}-stage,latest-run-stage
           dockerfile: .devops/33n-run.Dockerfile
           extra_build_args: --build-arg BASE_CUDA_DEV_CONTAINER=${{ secrets.AWS_PROD_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/${{ env.repo }}:build-latest
