@@ -1,9 +1,9 @@
 name: Release Whisper.CPP
 
-#on:
-#  push:
-#    branches:
-#      - '33n-build-stage'
+on:
+  push:
+    branches:
+      - '33n-build-stage'
 #    paths:
 #      - '.devops/33n-run.Dockerfile'
 jobs:
@@ -29,4 +29,4 @@ jobs:
           region: eu-west-2
           tags: run-${{ env.SHORT_SHA }}-stage,latest-run-stage
           dockerfile: .devops/33n-run.Dockerfile
-          extra_build_args: --build-arg BASE_CUDA_DEV_CONTAINER=${{ secrets.AWS_PROD_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/${{ env.repo }}:build-latest
+          extra_build_args: --build-arg BASE_CUDA_DEV_CONTAINER=${{ secrets.AWS_PROD_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/${{ env.repo }}:latest-build-stage

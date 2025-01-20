@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - '33n-build-stage'
-#    paths:
-#      - '.devops/33n-build.Dockerfile'
+    paths:
+      - '.devops/33n-build.Dockerfile'
 
 jobs:
   build:
