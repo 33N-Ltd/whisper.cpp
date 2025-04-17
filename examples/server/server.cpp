@@ -251,10 +251,9 @@ bool convert_to_wav(const std::string & temp_filename, std::string & error_resp)
 //    cmd_stream << "ffmpeg -i \"" << temp_filename << "\" -y -ar 16000 -ac 1 -c:a pcm_s16le \"" << converted_filename_temp << "\" 2>&1";
     cmd_stream << "./vad.py " << temp_filename << " " << converted_filename_temp;
     std::string cmd = cmd_stream.str();
-
-clock_t beginv = clock();
+    std::chrono::time_point<std::chrono::system_clock> startvad = std::chrono::system_clock::now();
     int status = std::system(cmd.c_str());
-clock_t endv = clock();
+    std::chrono::time_point<std::chrono::system_clock> stopvad = std::chrono::system_clock::now();
     if (status != 0) {
         error_resp = "{\"error\":\"FFmpeg conversion failed.\"}";
         return false;
@@ -271,8 +270,8 @@ clock_t endv = clock();
         error_resp = "{\"error\":\"Failed to rename the temporary file.\"}";
         return false;
     }
-double elapsed_secsv = double(endv-beginv) / CLOCKS_PER_SEC;
-fprintf(stderr, "Conversion time: %.2lf seconds.\n", elapsed_secsv);
+    std::chrono::duration<double> durationvad = stopvad - startvad;
+    fprintf(stderr, "VAD Elapsed time: %.2lf seconds.\n", durationvad.count());
     return true;
 }
 
@@ -871,16 +870,16 @@ int main(int argc, char ** argv) {
                 };
                 wparams.abort_callback_user_data = &is_aborted;
             }
-clock_t begin = clock();
+            std::chrono::time_point<std::chrono::system_clock> startasr = std::chrono::system_clock::now();
             if (whisper_full_parallel(ctx, wparams, pcmf32.data(), pcmf32.size(), params.n_processors) != 0) {
                 fprintf(stderr, "%s: failed to process audio\n", argv[0]);
                 const std::string error_resp = "{\"error\":\"failed to process audio\"}";
                 res.set_content(error_resp, "application/json");
                 return;
             }
-clock_t end = clock();
-double elapsed_secs = double(end-begin) / CLOCKS_PER_SEC;
-fprintf(stderr, "Transcription time: %.2lf seconds for %s.\n", elapsed_secs, filename.c_str());
+            std::chrono::time_point<std::chrono::system_clock> stopasr = std::chrono::system_clock::now();
+            std::chrono::duration<double> durationasr = stopasr - startasr;
+            fprintf(stderr, "Transcription time: %.2lf seconds for %s.\n", durationasr.count(), filename.c_str());
         }
 
         // return results to user
