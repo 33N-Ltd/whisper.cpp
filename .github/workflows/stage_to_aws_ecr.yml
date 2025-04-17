@@ -53,7 +53,7 @@ jobs:
           account_id: ${{ secrets.AWS_PROD_ACCOUNT_ID }}
           repo: ${{ env.repo }}
           region: eu-west-2
-          tags: build-${{ env.SHORT_SHA }}-stage,latest-build-stage
+          tags: build-${{ env.SHORT_SHA }}-stage
           dockerfile: .devops/33n-build.Dockerfile
 
   build_runtime_and_push_image:
@@ -64,8 +64,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Set Short SHA as Environment Variable
-        run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
       - name: Build and Push
         uses: kciter/aws-ecr-action@v5
         env:
@@ -77,8 +75,8 @@ jobs:
           account_id: ${{ secrets.AWS_PROD_ACCOUNT_ID }}
           repo: ${{ env.repo }}
           region: eu-west-2
-          tags: run-${{ env.SHORT_SHA }}-stage,latest-run-stage
+          tags: run-${{ env.SHORT_SHA }}-stage
           dockerfile: .devops/33n-run.Dockerfile
-          extra_build_args: --build-arg BASE_CUDA_DEV_CONTAINER=${{ secrets.AWS_PROD_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/${{ env.repo }}:latest-build-stage
+          extra_build_args: --build-arg BASE_CUDA_DEV_CONTAINER=${{ secrets.AWS_PROD_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/${{ env.repo }}:build-${{ env.SHORT_SHA }}-stage
 
 
