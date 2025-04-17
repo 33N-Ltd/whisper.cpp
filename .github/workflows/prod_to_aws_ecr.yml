@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       short_sha: ${{ steps.build_step.outputs.short_sha }}
-    name: Build & push image to ECR
+    name: Build & push image to ECR [build]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -62,7 +62,7 @@ jobs:
     needs: [build_make_and_push_image]
     runs-on: ubuntu-latest
 
-    name: Build & push image to ECR
+    name: Build & push image to ECR [runtime]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
