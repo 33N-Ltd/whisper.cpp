@@ -21,8 +21,9 @@ RUN apt-get update && \
 COPY --from=build /app /app
 
 COPY vad.py .
-RUN chmod u+x ./vad.py
+RUN chmod u+x ./vad.py \
+    ./models/download-ggml-model.sh large-v3
 
 ENTRYPOINT [ "bash", "-c" ]
 
-CMD [ "./build/bin/whisper-server --model ./models/ggml-medium.en.bin --host '0.0.0.0' --convert" ]
+CMD [ "./build/bin/whisper-server --model ./models/ggml-large-v3.en.bin --host '0.0.0.0' --convert" ]

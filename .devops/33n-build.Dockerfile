@@ -26,6 +26,6 @@ ENV CUDA_MAIN_VERSION=12.4
 ENV LD_LIBRARY_PATH /usr/local/cuda-${CUDA_MAIN_VERSION}/compat:$LD_LIBRARY_PATH
 
 COPY .. .
-RUN make medium.en
+RUN make build
 
 ENTRYPOINT [ "bash", "-c" ]
