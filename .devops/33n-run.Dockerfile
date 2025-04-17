@@ -26,4 +26,4 @@ RUN chmod u+x ./vad.py \
 
 ENTRYPOINT [ "bash", "-c" ]
 
-CMD [ "./build/bin/whisper-server --model ./models/ggml-large-v3.en.bin --host '0.0.0.0' --convert" ]
+CMD [ "./build/bin/whisper-server --model ./models/ggml-large-v3.bin --host '0.0.0.0' --convert" ]
