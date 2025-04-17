@@ -1,17 +1,18 @@
 #include "common.h"
+#include "common-whisper.h"
 
 #include "whisper.h"
 #include "httplib.h"
 #include "json.hpp"
 
+#include <chrono>
 #include <cmath>
-#include <fstream>
 #include <cstdio>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
-#include <cstring>
-#include <sstream>
 
 #if defined(_MSC_VER)
 #pragma warning(disable: 4244 4267) // possible loss of data
@@ -78,6 +79,7 @@ struct whisper_params {
     bool use_gpu         = true;
     bool flash_attn      = false;
     bool suppress_nst    = false;
+    bool no_context      = false;
 
     std::string language        = "en";
     std::string prompt          = "";
@@ -139,6 +141,7 @@ void whisper_print_usage(int /*argc*/, char ** argv, const whisper_params & para
     fprintf(stderr, "  --convert,                     [%-7s] Convert audio to WAV, requires ffmpeg on the server\n", sparams.ffmpeg_converter ? "true" : "false");
     fprintf(stderr, "  -sns,      --suppress-nst      [%-7s] suppress non-speech tokens\n", params.suppress_nst ? "true" : "false");
     fprintf(stderr, "  -nth N,    --no-speech-thold N [%-7.2f] no speech threshold\n",   params.no_speech_thold);
+    fprintf(stderr, "  -nc,       --no-context        [%-7s] do not use previous audio context\n", params.no_context ? "true" : "false");
     fprintf(stderr, "\n");
 }
 
@@ -185,6 +188,7 @@ bool whisper_params_parse(int argc, char ** argv, whisper_params & params, serve
         else if (arg == "-fa"   || arg == "--flash-attn")      { params.flash_attn      = true; }
         else if (arg == "-sns"  || arg == "--suppress-nst")    { params.suppress_nst    = true; }
         else if (arg == "-nth"  || arg == "--no-speech-thold") { params.no_speech_thold = std::stof(argv[++i]); }
+        else if (arg == "-nc"   || arg == "--no-context")      { params.no_context      = true; }
 
         // server params
         else if (                  arg == "--port")            { sparams.port        = std::stoi(argv[++i]); }
@@ -510,6 +514,10 @@ void get_req_parameters(const Request & req, whisper_params & params)
     {
         params.suppress_nst = parse_str_to_bool(req.get_file_value("suppress_nst").content);
     }
+    if (req.has_file("no_context"))
+    {
+        params.no_context = parse_str_to_bool(req.get_file_value("no_context").content);
+    }
 }
 
 }  // namespace
@@ -727,8 +735,8 @@ int main(int argc, char ** argv) {
                 return;
             }
 
-            // read wav content into pcmf32
-            if (!::read_wav(temp_filename, pcmf32, pcmf32s, params.diarize))
+            // read audio content into pcmf32
+            if (!::read_audio_data(temp_filename, pcmf32, pcmf32s, params.diarize))
             {
                 fprintf(stderr, "error: failed to read WAV file '%s'\n", temp_filename.c_str());
                 const std::string error_resp = "{\"error\":\"failed to read WAV file\"}";
@@ -739,10 +747,10 @@ int main(int argc, char ** argv) {
             // remove temp file
             std::remove(temp_filename.c_str());
         } else {
-            if (!::read_wav(audio_file.content, pcmf32, pcmf32s, params.diarize))
+            if (!::read_audio_data(audio_file.content, pcmf32, pcmf32s, params.diarize))
             {
-                fprintf(stderr, "error: failed to read WAV file\n");
-                const std::string error_resp = "{\"error\":\"failed to read WAV file\"}";
+                fprintf(stderr, "error: failed to read audio data\n");
+                const std::string error_resp = "{\"error\":\"failed to read audio data\"}";
                 res.set_content(error_resp, "application/json");
                 return;
             }
@@ -822,6 +830,7 @@ int main(int argc, char ** argv) {
 
             wparams.no_timestamps    = params.no_timestamps;
             wparams.token_timestamps = !params.no_timestamps && params.response_format == vjson_format;
+            wparams.no_context       = params.no_context;
 
             wparams.suppress_nst     = params.suppress_nst;
 
@@ -1029,6 +1038,11 @@ fprintf(stderr, "Transcription time: %.2lf seconds for %s.\n", elapsed_secs, fil
         res.set_content(success, "application/text");
 
         // check if the model is in the file system
+    });
+
+    svr.Get(sparams.request_path + "/health", [&](const Request &, Response &res){
+        const std::string health_response = "{\"status\":\"ok\"}";
+        res.set_content(health_response, "application/json");
     });
 
     svr.set_exception_handler([](const Request &, Response &res, std::exception_ptr ep) {
