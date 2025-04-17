@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - '33n-build-DISABLED'
-#    paths:
-#      - '.devops/33n-build.Dockerfile'
 
 jobs:
   build:
@@ -35,13 +33,17 @@ jobs:
   build_make_and_push_image:
     needs: [release_tag_cpp]
     runs-on: ubuntu-latest
-
+    outputs:
+      short_sha: ${{ steps.build_step.outputs.short_sha }}
     name: Build & push image to ECR
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set Short SHA as Environment Variable
         run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+      - name: Set Short SHA as Output Variable
+        id: build_step
+        run: echo "short_sha=${{ env.SHORT_SHA }}" >> $GITHUB_OUTPUT
       - name: Build and Push
         uses: kciter/aws-ecr-action@v5
         env:
@@ -69,6 +71,7 @@ jobs:
         env:
           repo: whisper_cpp
           build_github_token: ${{ secrets.GIT_TOKEN_CODE_DEPLOY }}
+          SHORT_SHA: ${{ needs.build_make_and_push_image.outputs.short_sha }}
         with:
           access_key_id: ${{ secrets.AWS_PROD_ECR_AKI }}
           secret_access_key: ${{ secrets.AWS_PROD_ECR_SAK }}

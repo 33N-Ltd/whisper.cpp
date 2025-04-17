@@ -21,7 +21,7 @@ RUN apt-get update && \
 COPY --from=build /app /app
 
 COPY vad.py .
-RUN chmod u+x ./vad.py \
+RUN chmod u+x ./vad.py && \
     ./models/download-ggml-model.sh large-v3
 
 ENTRYPOINT [ "bash", "-c" ]
