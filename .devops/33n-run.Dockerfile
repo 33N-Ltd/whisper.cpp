@@ -12,7 +12,7 @@ ENV LD_LIBRARY_PATH /usr/local/cuda-${CUDA_MAIN_VERSION}/compat:$LD_LIBRARY_PATH
 WORKDIR /app
 
 RUN apt-get update && \
-  apt install -y --allow-change-held-packages curl ffmpeg cuda-libraries-12-4 libcublas-12-4 libnccl2 pip && \
+  apt install -y --allow-change-held-packages curl ffmpeg cuda-libraries-12-4 libcublas-12-4 libnccl2 pip git && \
   apt full-upgrade -y && \
   pip install silero-vad onnxruntime && \
   pip cache purge && \
